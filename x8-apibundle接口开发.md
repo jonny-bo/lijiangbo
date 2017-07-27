@@ -1,4 +1,4 @@
-# ES-X8 ApiBundle接口开发
+# ES-X8 ApiBundle接口开发(完善中)
 
 ## 前言
 
@@ -242,9 +242,27 @@ pathMeta的resNames里面，数组第一个当作文件夹名称，命名空间�
 
 - 路由不需要创建，有既定的规则/资源名1/资源1标识(id)/资源名2/资源2标识(id)...
 - 资源类对应路由的resNames值，对应: 资源名1/资源名1.资源名2
-- 请求的方法(POST,GET,UPDATE...)和参数类型，对应资源的函数入口
+- 请求的方法(POST,GET,PATCH,DELETE)和参数类型(最后是否有资源标识区分get/search)，对应资源的函数入口(add,get/search,update,remove)
+
+```
+
+    //eg: GET /api/course/1/member
+    //path: /src/ApiBundle/Api/Resource/Course
+    //clsaaName: CoursesMember
+    //method: search
+
+    //eg: GET /api/course/1/member/1
+    //path: /src/ApiBundle/Api/Resource/Course
+    //clsaaName: CoursesMember
+    //method: get
+```
 - 接口资源类都继承自AbstractResource，里面封装哦一些通用方法
-- 所有的异常都会被捕获，然后返回json格式**错误的响应**
+- 所有的异常都会被捕获(ExceptionListener监听)，然后返回json格式**错误的响应**
+- 所有的异常使用<code>BadRequestHttpException</code>抛出，状态码使用<code>ApiBundle\Api\Exception\ErrorCode</code>
+```
+throw new BadRequestHttpException('签名错误', null, ErrorCode::UNAUTHORIZED);
+```
+- 一般接口访问需要先获取access_token，并且在请求头信息中加入<code>X-Auth-Token</code>（其中一种认证方式）
 - 不需要认证的接口在方法前面加上注解
 
 ```
