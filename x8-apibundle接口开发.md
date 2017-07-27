@@ -1,6 +1,7 @@
 # ES-X8 ApiBundle接口开发(完善中)
 
 ## 前言
+- ES 版本：x8 <code>8.0.17</code>
 
 x8之前api开发是用的[Silex](https://silex.symfony.com/doc/2.0/intro.html)一个基于symfony组件小型的api开发框架，集成到主系统去的，在<code>web/app_dev.php</code> or <code>web/app.php</code>根据url路径是否包含**/api**关键字段决定是否进去api框架的程序中．代码如下：
 
