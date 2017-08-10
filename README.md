@@ -4,3 +4,4 @@
 
 - [对接用户登陆同步和授权](./对接用户登陆同步和授权.md)
 - [x8-apibundle接口开发学习](./x8-apibundle接口开发.md)
+- [restful api](./retful-api.md)
