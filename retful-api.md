@@ -51,13 +51,17 @@ When referring to what each endpoint can do, you’ll want to list valid HTTP Ve
 ## Resourse
 
 `GET: api/v2/users/1`   --->  `UsersResourse:view`  --->  `return json {user}`
+
 `POST: api/v2/users/1`   --->  `UsersResourse:update`  --->  `return jsonEndpoints {user}`
+
 `DELETE: api/v2/users/1`   --->  `UsersResourse:delete`  --->  `return json {bool}`
 
 ----
 
 `GET: api/v2/users`   --->  `UsersResourse:index`  --->  `return json {userList}`
+
 `POST: api/v2/users`   --->  `UsersResourse:create`  --->  `return json {user}`
+
 `OPTIONS: api/v2/users` ---> `UsersResourse:options` --->  `return json {options}`
 
 ## PathParse
