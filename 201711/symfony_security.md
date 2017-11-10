@@ -18,6 +18,7 @@ tags: symfony
   1. 千万不要明文保存用户的密码, 应该使用加密算法`加密`
   2. 千万不要在cookie中存放用户的密码
   3. 不要让cookie有权限访问所有的操作（XSS攻击）
+  4. crsf攻击
   ......
 
 ## symfony security组件 身份验证
