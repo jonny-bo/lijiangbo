@@ -178,7 +178,7 @@ class UserLocator
 
     //获取用户的地理位置
     public function getUserGeoBoundaries() {
-        return = $this->getBestGeocoder()->geocode($this->userIp);
+        return $this->getBestGeocoder()->geocode($this->userIp);
     }
 
     public function addGeocoder(Geocoder $geocoder)
@@ -222,3 +222,28 @@ class UserLocatorPass implements CompilerPassInterface
 ```
 
   在确认user_locator服务的存在后，我们找到相对应的标签`app.user_locator`所有的服务，使用`addMethodCall`添加`calls`参数（上面提到过，该参数会在实例化后执行定义在calls里面的方法，即`addGeocoder`）加载这些服务到'user_locator'。
+
+  我们还可以在标签上定义自定义属性。因此，我们可以将每个请求的精度的配置如下，然后用编译器通过只提供最准确的地理编码的用户定位：
+
+```
+tags:
+    - { name: app.geocoder, accuracy: 69 }
+```
+
+ 在`UserLocatorPass`里面通过accuracy参数确认最精确地理编码服务，然后做一些事情．
+
+ 每当我们定义服务的YAML配置，symfony会内部基于该信息创建服务定义。通过添加一个编译器传递，我们可以动态修改这些服务定义（例如上面的`UserLocatorPass`就动态的修改了服务的定义）。
+
+
+## Listeners监听器
+
+侦听器是实现观察者设计模式的一种方法。在这种模式下，某一段代码并不立即执行。相反，它通知所有的观察者，它已经到达了一个给定的执行点，如果需要则允许这些观察者接管控制流。
+
+在symfony中，我们通过事件使用观察者模式。任何类或函数都可以在事件合适时触发事件。事件本身可以在类中定义。这允许将更多信息传递给观察该事件的代码。框架本身将触发处理请求过程中不同节点的事件。这些事件如下：
+
+  - kernel.request：此事件发生在一个请求发起时到进入控制器之前，它在内部用于填充请求（Request）对象。
+  - kernel.controller：此事件发生后立即执行控制器（即将进入控制器）。它可以用来改变正在执行的控制器。
+  - kernel.view：在执行控制器，如果控制器没有返回响应对象时触发此事件。例如，在渲染　twig模板视图时候触发。
+  - kernel.response：此事件在响应发送出去之前触发。它可以用于在发出响应之前修改响应。
+  - kernel.terminate：在响应发送后触发此事件出。它可以用来执行任何耗时的操作，而不是生成响应所必需的。
+  - kernel.exception：此事件发生在框架捕获了一个异常被触发。
