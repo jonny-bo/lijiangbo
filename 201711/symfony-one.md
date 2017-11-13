@@ -128,7 +128,7 @@ class UserLocator
 ```
 services:
     user_locator:
-        class: Khepin\BookBundle\Geo\UserLocator
+        class: AppBundle\Geo\UserLocator
         scope: request
         arguments: [@geocoder, @request]
 ```
@@ -139,3 +139,86 @@ services:
 | Container   |　所有的调用 $this->get('service_name') 返回同一个实例（单例）|
 | Prototype   |　每次调用 $this->get('service_name') 返回一个新的实例 |
 | Request     |  每次调用$this->get('service_name')　返回在请求的服务相同的实例（区别在twi可能调用的subrequests）|
+
+
+服务标签Tagging services：
+
+在上面的示例中，我们创建了一个`user_locator`服务依赖于地理编码服务（`geocoder`）。但是，有许多可能的方法来定位用户。
+
+例如有`freegeoip_geocoder`，`random_geocoder`两种地理编码服务
+
+```
+    freegeoip_geocoder:
+        class: AppBundle\Geo\FreeGeoIpGeocoder
+        arguments: [@geocoder]
+        tags:
+            - { name: app.geocoder }
+    random_geocoder:
+        class: AppBundle\Geo\RandomLocationGeocoder
+        tags:
+            - { name: app.geocoder }
+```
+
+我们可能在`user_locator`中使用最精确的一个地理编码服务，我们不能把所有这些服务在我们的类的构造函数直接使用（不利于扩展），所以我们要修改我们的`UserLocator`类有一个`addGeocoder`方法如下：
+
+```
+namespace AppBundle\Geo;
+
+use Geocoder\Geocoder;
+use Symfony\Component\HttpFoundation\Request;
+
+class UserLocator
+{
+    protected $userIp;
+    protected $geocoders = [];
+
+    public function __construct(Request $request) {
+        $this->userIp = $request->getClientIp();
+    }
+
+    //获取用户的地理位置
+    public function getUserGeoBoundaries() {
+        return = $this->getBestGeocoder()->geocode($this->userIp);
+    }
+
+    public function addGeocoder(Geocoder $geocoder)
+    {
+        $this->geocoders[] = $geocoder;
+    }
+
+    //挑选最精确的地理编码
+    public function getBestGeocoder(){/* ... */}
+}
+```
+
+  通知我们要添加标签服务（`tags`）的DIC（`依赖注入`）不能通过配置完成。这是在编译DIC时通过`Compiler passes`编译器传递完成的。
+  用于如下：
+
+```
+namespace AppBundle\DependencyInjection\Compiler;
+
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Compiler
+ \CompilerPassInterface;
+use Symfony\Component\DependencyInjection\Reference;
+
+class UserLocatorPass implements CompilerPassInterface
+{
+    public function process(ContainerBuilder $container) {
+        if (!$container->hasDefinition('user_locator')) {
+            return;
+        }
+        $service_definition = $container->getDefinition('user_locator');
+        $tagged = $container->findTaggedServiceIds('app.geocoder');
+        foreach ($tagged as $id => $attrs) {
+            $service_definition->addMethodCall(
+                'addGeocoder',
+                [new Reference($id)]
+            );
+        }
+    }
+}
+
+```
+
+  在确认user_locator服务的存在后，我们找到相对应的标签`app.user_locator`所有的服务，使用`addMethodCall`添加`calls`参数（上面提到过，该参数会在实例化后执行定义在calls里面的方法，即`addGeocoder`）加载这些服务到'user_locator'。
