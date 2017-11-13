@@ -33,7 +33,109 @@ Symfony2框架是基于服务为基础搭建的，框架自身已经预定义了
 
 symfony 框架让我们能够简单的去创建一个服务，并使用它．如果你的控制器代码特别长，包含太多的业务逻辑，那么就需要用服务去定义一个类去处理，这样就重构了你的代码，让人看起来更加的简洁清晰．
 
-下面是一个一个地理位置的服务例子：
+下面是创建一个服务例子：
 
+  - 以下是php代码，这是在没有定义services情况下使用的方法:
 
+```php
+    //获取客户端ip地址
+    $ip = $this->get('request')->getClientIp();
+    
+    //实例化地址转换工具类
+    $adapter = new \Geocoder\HttpAdapter\CurlHttpAdapter();
+    $geocoder = new Geocoder();
+    $geocoder->registerProviders(array(
+        new \Geocoder\Provider\FreeGeoIpProvider($adapter),
+    ));
 
+    //调用工具类解析ip到地理位置
+    $result = $geocoder->geocode($ip);
+
+```
+  - 定义service.yml，用依赖注入的方式实现以上php的重构
+
+```yml
+services:
+    geocoder_adapter:
+        class: Geocoder\HttpAdapter\CurlHttpAdapter
+        public: false
+    geocoder_provider:
+        class: Geocoder\Provider\FreeGeoIpProvider
+        public: false
+        arguments: [@geocoder_adapter]
+    geocoder:
+        class: Geocoder\Geocoder
+        calls:
+        - [registerProviders, [[@geocoder_provider]]]
+```
+  我们实际上定义了三种服务，`geocoder_adapter`，`geocoder_provider`需要一个`geocoder_adapter`的实例当作构造函数的参数，`geocoder`在初始化之后会执行`registerProviders`方法，并且这个方法需要一个`geocoder_provider`的实例当做参数.
+
+  我们用arguments: [@+service_name, ...]将参考服务作为一个参数
+  我们可以做的不仅仅是定义新类（参数）；我们还可以实例化后调用类上的方法（calls参数配置）。
+
+  甚至可以设置，直接声明为公共属性时（默认为共有）。
+  我们将前两项服务列为私有（public: false）。这意味着他们不会在我们的控制器访问。然而，它们可以被依赖性所利用。注入容器（DIC）被注入到其他服务中。
+
+  - 调用定义服务实现上面的代码
+
+```
+    //获取客户端ip地址
+    $ip = $this->get('request')->getClientIp();
+    //调用ip转换地址服务解析ip
+    $result = $this->get('geocoder')->geocode($ip);
+```
+
+  - 我们定义一个服务类来获取用户的地理位置
+
+```
+namespace AppBundle\Geo;
+
+use Geocoder\Geocoder;
+use Symfony\Component\HttpFoundation\Request;
+
+class UserLocator
+{
+    protected $geocoder;
+    protected $userIp;
+
+    public function __construct(Geocoder $geocoder, Request
+    $request) {
+        $this->geocoder = $geocoder;
+        $this->userIp = $request->getClientIp();
+    }
+
+    //获取用户的地理位置
+    public function getUserGeoBoundaries($precision = 0.3) {
+        // 找到用户的坐标
+        $result = $this->geocoder->geocode($this->userIp);
+        $lat = $result->getLatitude();
+        $long = $result->getLongitude();
+        $latmMax = $lat + 0.25; // (大约 25km)
+        $latMin = $lat - 0.25;
+        $longMax = $long + 0.3; // (大约 25km)
+        $longMin = $long - 0.3;
+
+        return [
+            'latmMax' => $latmMax,
+            'latMin' => $latMin,
+            'longMax' => $longMax,
+            'longMin' => $longMin
+        ];
+    }
+}
+```
+  # services.yml
+```
+services:
+    user_locator:
+        class: Khepin\BookBundle\Geo\UserLocator
+        scope: request
+        arguments: [@geocoder, @request]
+```
+注意，我们在这里定义了作用域`scope`。默认情况下，DIC有两个作用域：容器Container和原型Prototype，其中框架还添加了第三个名为请求。下表显示了他们之间的差异：
+
+|     Scope   |  Differences |
+| :---------: | :----------: |
+| Container   |　所有的调用 $this->get('service_name') 返回同一个实例（单例）|
+| Prototype   |　每次调用 $this->get('service_name') 返回一个新的实例 |
+| Request     |  每次调用$this->get('service_name')　返回在请求的服务相同的实例（区别在twi可能调用的subrequests）|
