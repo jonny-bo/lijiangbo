@@ -7,6 +7,58 @@ tags: symfony
 
 # symfony security　安全机制学习
 
+## Security
+
+  Security通常分为如下两个部分：
+
+  - Authentication　认证，这表明谁试图访问我们的应用程序，是授权的先决条件。
+  - Authorization 授权，它决定用户是否有权访问应用程序特定部分。
+  换句话说，身份验证回答了一个问题：＂你是谁？＂（波波）和授权决定你被允许做什么（例如，使用原力：可以，飞起来：不可以）
+
+## Authentication
+
+  验证用户的方法有很多种。目前最常见的模式是通过用户名和密码，但我们也有第三方网站的认证（QQ，微信，微博，GitHub，等等），有时使用OAuth或自定义方法。LDAP也是企业中流行的选择。
+
+  symfony的官方文档已经包含了所有你需要知道的关于创建自定义身份验证。然而，很难理解为什么你在遵循官方指南时，会以一种特殊的方式做事。下面这部分指导你完成同样的过程，同时详细说明为什么事情是这样做的，以及每个部分是如何相互连接的。
+  
+## The firewall防火墙
+
+  防火墙是通过symfony的配置让他们知道应用程序的哪些部分是需要权限（通过URL模式定义，用户进行身份验证）才能访问的，哪些是不需要．就好像去有些景点旅游有些是免费的有些是需要门票的，这里防火墙就是让你配置哪些是可以免费旅游，哪些不是．
+
+  防火墙只关心认证。每当请求到达一个URL，防火墙检查这个URL是否可以被匿名用户访问（在这种情况下，请求通过）。如果URL需要经过身份验证的用户，防火墙中断它并启动身份验证过程，或者用户已经经过身份验证的直接通过。
+
+  对用户进行身份验证，你可以在symfony的防火墙声明一个特殊的URL。此URL未映射到控制器。防火墙捕获它，发现哪个类正在监听它，并要求它对用户进行身份验证。防火墙配置（`app/config/security.yml`）如下：
+
+  ```yml
+
+  security:
+    encoders:
+        AppBundle\Entity\User: sha256
+    providers:
+        main:  
+            entity: { class: AppBundle:User, property: nickname }
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            anonymous: true
+            form_login:
+                login_path: login
+                check_path: login_check
+            logout: true
+  ```
+
+  `login_check`路由虽然没有映射到一个控制器，这是很重要的。但是对于到这个路由的请求security组件会进行拦截，然后走身份验证流程．同时，我们需要在`routing.yml`进行定义路由，然而它不需要被连接到一个控制器：
+
+```
+# routing.yml
+login_check:
+    path:     /login_check
+
+```
+  
+
 ## 常规用户身份验证流程
   1. 登录表单输入用户`身份信息`（用户名，密码）
   2. 服务端接受请求，根据用户名查找用户信息（能够提供`身份信息的提供者`，通常为数据库的user表，文件等）
