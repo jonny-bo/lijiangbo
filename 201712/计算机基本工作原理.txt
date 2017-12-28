@@ -1,0 +1,261 @@
+
+# 计算机基本工作原理
+
+## 描述
+- 时间：2017.12.28
+- 题目：计算机基本工作原理
+
+## 内容
+
+1.计算机系统组成
+  硬件系统+软件系统
+  1）硬件系统（运算器、控制器、存储器、输入设备、输出设备）
+     CPU：运算器（算数运算+逻辑运算）、控制器（协调和调度资源）
+     主板：北桥、南桥、BIOS、网卡、时钟
+     存储器：内存储器（RAM、ROM）、外存储器（硬盘、光盘）     
+     输入设备：键盘、鼠标
+     输出设备：显示器、打印机
+     机箱：
+     电源：
+  2）软件系统
+     系统软件：BIOS程序、驱动程序、操作系统、语言处理程序
+     应用软件：文字处理软件、表格处理软件、辅助设计软件、娱乐休闲软件
+     ######################################################################################################################
+                                                 计算机冯诺·伊曼结构
+     
+         状态寄存器数据送入控制器中  +---------+
+                     |<--------------|   PSW   |
+                     |               +---------+                                        
+                     |   结果可能修改PSW  ^     结果写入RAM
+                     |                    | |----------------|----------------------->|<------------------
+                     |                    | |     |          |          结果为指令地址|                  | 
+               +----------+         +----------+  |     +---------+      +--------+   |                  | 
+               |指令译码器|-------->|    ALU   |  |     |   RAM   |<=====|   PC   |<--|送入指定的地址    | 
+               +----------+         +----------+  |     +---------+      +--------+   |                  |
+                  |  ^                    ^ ------|  读取数据|                | +1    |                  | 
+                  |  |                    |------------------|                |-------|                  | 
+                  |  |                                       |读取指令                                   | 
+                  |  | 指令送入指令译码器               +---------+                                      | 
+                  |  |<---------------------------------|    IR   |                                      | 
+                  |                                     +---------+                                      | 
+                  |------------------------------------------------------------------------------------->| 
+                                              从指令中读取内存地址               
+     Address Bus      ：地址总线       ====
+     Data/Instruction ：数据/指令总线  ----
+     
+     ######################################################################################################################
+  3）控制器
+     对输入的指令进行分析，并统一控制CPU各个部件完成一定任务的部件
+  4）CPU工作流程
+     取指：从内存中取出指令，放入指令寄存器中
+     译码：指令译码电路进行翻译，控制不同器件的操作
+     执行：执行设定好的操作
+     存数：操作完的数据结果送入相应的部件，更新PSW状态信息
+  5）数制和单位
+     二进制  ：每位只有2个计数，计满2次便向上位进1    (00010001)B
+     十进制  ：每位只有10个计数，计满10次便向上位进1  (15)D
+     十六进制：每位只有16个计数,计满16次便向上位进1   (0E)H
+     
+     bit   ：比特，二进制的一位，可以表示2种不同的信息
+     Byte  ：字节，  1B  = 8bit （0000 0000），可以表示2^8种不同信息
+     KB    ：千字节，1KB = 1024B = 2^10 * 8 bit，可以表示
+     MB    ：兆字节，1MB = 1024KB
+     
+     ######################################################################################################################
+                                                     RAM 内存图
+                H                               L
+                | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+                +---+---+---+---+---+---+---+---+
+      0000:0000 | 1 | 0 | 0 | 1 | 0 | 1 | 1 | 0 |
+                +-------------------------------+
+      0000:0001 | 1 | 1 | 1 | 1 | 0 | 0 | 1 | 1 |
+                +-------------------------------+
+      0000:0002 | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1 |
+                +-------------------------------+
+      0000:0003 |   |   |   |   |   |   |   |   |
+                +-------------------------------+
+      0000:0004 |   |   |   |   |   |   |   |   |
+                +-------------------------------+
+          ~                     ~
+                +-------------------------------+
+      06D0:0100 | 1 | 1 | 0 | 1 | 1 | 0 | 0 | 0 |
+                +-------------------------------+ 
+      06D0:0101 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+                +-------------------------------+ 
+      06D0:0102 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+                +-------------------------------+ 
+      06D0:0103 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |
+                +-------------------------------+ 
+      06D0:0104 | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1 |
+                +-------------------------------+                
+                
+      ######################################################################################################################          
+      [0000:0000] = 1001 0110
+      大端存储：高位部分存储低位地址 word ptr [0000:0001] = 1111 0011 0101 0111
+      小端存储：低位部分存储低位地址 word ptr [0000:0001] = 0101 0111 1111 0011
+      
+      
+  6）指令
+     [06D0:0100] = B8H = 11011000B
+     [06D0:0101] = 03H = 00000101B
+     [06D0:0102] = 00H = 00000000B
+     [06D0:0103] = 89H = 10001001B
+     [06D0:0104] = C3H = 11000011B
+     
+     MOV AX,0003  ;B80300
+     MOV BX,AX    ;89C3
+     
+     
+  8）PSW状态寄存器
+    CF：进位标志    CY，进位；NC，未进位     无符号运算
+    OF：溢出标志    OV，溢出；NV，未溢出     有符号运算
+    ZF：零标志      ZR，为零；NZ，不为零
+    PF：奇偶标志    PE，偶数；PO，奇数
+    SF：符号标志    NG，负数；PL，正数
+    
+2.操作系统知识讲解
+  1）理解
+    操作系统也是软件，比较特殊，它通过对计算机大量的基础性核心功能进行封装，以API的方式对外开放，提供一个简单的便于操作使用用户接口。其实也是一种分层的思想
+    任务管理、内存管理、中断处理、文件系统、驱动程序、I/O管理
+  2）多道程序技术
+    解决窝工，提高CPU使用率。为什么要提高CPU使用率？因为在所有设备中，CPU工作效率最高。窝工只会出现在外围的低速器件上。
+    解决程序并发执行的问题。多个程序共享系统资源，不停的进行切换。调度算法：先来先服务、优先级调度、最短执行时间、时间片轮转
+    a.进程：资源分配的最小单位
+      程序在计算机中的一次执行过程称为进程，就是正在运行的程序。程序：代码+数据。进程：程序+CPU上下文（寄存器）+系统资源（Socket套接字资源）。
+      进程特性：动态性（程序的运行状态在不断变化，每当发生一次函数调用，就会在栈中分配一块内存空间，用户存放此次函数调用的参数和局部变量）
+                独立性（一个进程是一个独立的实体，是计算机系统资源的使用单位）
+                并发性（多个进程可以同时存在）
+    b.线程：CPU调度的最小单位
+      虚拟内存管理出来之后的作品
+   3）任务
+     a.解释
+       嵌入式系统中用法，并不特定为线程，线程与进程尚未区别就在于是否处于同一内存空间，具体要看具体的嵌入式操作系统。
+     b.任务的状态：就绪（在就绪队列中等待CPU资源）、运行（正在执行中）、阻塞（因为等待某种事件的发生而暂时被存放在阻塞队列中）
+     c.任务控制块
+       任务的管理信息：任务标志ID、任务状态、任务的优先级、任务的调度信息、任务的时间统计、队列指针
+       CPU上下文信息：CPU寄存器当前值
+       资源管理信息：文件、设备等资源可采用加锁的方式进行保护起来，保证任务被切出之后其锁定的资源不被其他任务破坏。但这样可能造成死锁的产生
+       UCOS：时间片优先级可抢占式调度
+       内部有一个定时器，一般定时时间为20ms，定时产生后，会进行一次调度。首先从队列中挑选出最高优先级任务，判断是否为当前任务，如果不是当前任务，将当前任务
+       保存起来，放入就绪队列中，切换当前任务为找出的最高优先级任务，恢复现场环境；如果是当前任务，那么不进行切换，直接返回。
+       
+     ######################################################################################################################
+      typedef struct os_tcb {
+      OS_STK          *OSTCBStkPtr;          /* Pointer to current top of stack                              */
+
+      #if OS_TASK_CREATE_EXT_EN > 0
+          void            *OSTCBExtPtr;      /* Pointer to user definable data for TCB extension             */
+          OS_STK          *OSTCBStkBottom;   /* Pointer to bottom of stack                                   */
+          INT32U           OSTCBStkSize;     /* Size of task stack (in number of stack elements)             */
+          INT16U           OSTCBOpt;         /* Task options as passed by OSTaskCreateExt()                  */
+          INT16U           OSTCBId;          /* Task ID (0..65535)                                           */
+      #endif
+
+          struct os_tcb   *OSTCBNext;        /* Pointer to next     TCB in the TCB list                      */
+          struct os_tcb   *OSTCBPrev;        /* Pointer to previous TCB in the TCB list                      */
+
+      #if OS_EVENT_EN
+          OS_EVENT        *OSTCBEventPtr;    /* Pointer to event control block                               */
+      #endif
+
+      #if ((OS_Q_EN > 0) && (OS_MAX_QS > 0)) || (OS_MBOX_EN > 0)
+          void            *OSTCBMsg;         /* Message received from OSMboxPost() or OSQPost()              */
+      #endif
+
+      #if (OS_VERSION >= 251) && (OS_FLAG_EN > 0) && (OS_MAX_FLAGS > 0)
+      #if OS_TASK_DEL_EN > 0
+          OS_FLAG_NODE    *OSTCBFlagNode;    /* Pointer to event flag node                                   */
+      #endif
+          OS_FLAGS         OSTCBFlagsRdy;    /* Event flags that made task ready to run                      */
+      #endif
+
+          INT16U           OSTCBDly;         /* Nbr ticks to delay task or, timeout waiting for event        */
+          INT8U            OSTCBStat;        /* Task status                                                  */
+          BOOLEAN          OSTCBPendTO;      /* Flag indicating PEND timed out (OS_TRUE == timed out)        */
+          INT8U            OSTCBPrio;        /* Task priority (0 == highest)                                 */
+
+          INT8U            OSTCBX;           /* Bit position in group  corresponding to task priority        */
+          INT8U            OSTCBY;           /* Index into ready table corresponding to task priority        */
+      #if OS_LOWEST_PRIO <= 63
+          INT8U            OSTCBBitX;        /* Bit mask to access bit position in ready table               */
+          INT8U            OSTCBBitY;        /* Bit mask to access bit position in ready group               */
+      #else
+          INT16U           OSTCBBitX;        /* Bit mask to access bit position in ready table               */
+          INT16U           OSTCBBitY;        /* Bit mask to access bit position in ready group               */
+      #endif
+
+      #if OS_TASK_DEL_EN > 0
+          INT8U            OSTCBDelReq;      /* Indicates whether a task needs to delete itself              */
+      #endif
+
+      #if OS_TASK_PROFILE_EN > 0
+          INT32U           OSTCBCtxSwCtr;    /* Number of time the task was switched in                      */
+          INT32U           OSTCBCyclesTot;   /* Total number of clock cycles the task has been running       */
+          INT32U           OSTCBCyclesStart; /* Snapshot of cycle counter at start of task resumption        */
+          OS_STK          *OSTCBStkBase;     /* Pointer to the beginning of the task stack                   */
+          INT32U           OSTCBStkUsed;     /* Number of bytes used from the stack                          */
+      #endif
+
+      #if OS_TASK_NAME_SIZE > 1
+          INT8U            OSTCBTaskName[OS_TASK_NAME_SIZE];
+      #endif
+      } OS_TCB;
+      
+      // 任务栈 ARM CPU
+      OS_STK *OSTaskStkInit (void (*task)(void *pd), void *p_arg, OS_STK *ptos, INT16U opt)
+      {
+          OS_STK *stk;
+
+          opt      = opt;                 /* 'opt' is not used, prevent warning                      */
+          
+          stk      = ptos;                /* Load stack pointer                                      */
+          
+          *(stk)   = (OS_STK)task;        /* Entry Point                                             */
+          *(--stk) = (INT32U)0;           /* LR                                                      */
+          *(--stk) = (INT32U)0;           /* R12                                                     */
+          *(--stk) = (INT32U)0;           /* R11                                                     */
+          *(--stk) = (INT32U)0;           /* R10                                                     */
+          *(--stk) = (INT32U)0;           /* R9                                                      */
+          *(--stk) = (INT32U)0;           /* R8                                                      */
+          *(--stk) = (INT32U)0;           /* R7                                                      */
+          *(--stk) = (INT32U)0;           /* R6                                                      */
+          *(--stk) = (INT32U)0;           /* R5                                                      */
+          *(--stk) = (INT32U)0;           /* R4                                                      */
+          *(--stk) = (INT32U)0;           /* R3                                                      */
+          *(--stk) = (INT32U)0;           /* R2                                                      */
+          *(--stk) = (INT32U)0;           /* R1                                                      */
+          *(--stk) = (INT32U)p_arg;       /* R0 : argument                                           */
+          *(--stk) = (INT32U)0x00000013L; /* CPSR  (SVC mode, Enable both IRQ and FIQ interrupts)    */
+                                 
+          return (stk);
+      }
+
+     
+     ######################################################################################################################
+     d.任务切换
+       将CPU上下文信息保存到当前任务的TCB中；
+       更新当前任务状态，从运行态变为就绪态，并存入就绪队列中去；
+       按照调度策略，从就绪队列中选择一个任务进行运行；
+       修改新任务状态，从就绪态更改为运行态；
+       根据新任务TCB内容，恢复它的上下文环境，包括PC指针。
+       
+   3）任务间的互斥与同步
+     a.信号量
+     ######################################################################################################################
+     P(semaphore S)
+     {
+         --S.count;//申请一个资源
+         if(S < 0){
+             将当前任务阻塞起来，加入到阻塞队列中，调度新的任务运行
+         }
+     }
+     
+     V(semaphore S)
+     {
+         ++S.count;//释放一个资源
+         if(S <=0 ){
+           从阻塞队列中取出这个任务，将该任务改为就绪态，插入就绪队列
+         }
+     }
+     
+     ######################################################################################################################
