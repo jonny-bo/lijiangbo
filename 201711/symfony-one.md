@@ -138,7 +138,7 @@ services:
 | :---------: | :----------: |
 | Container   |　所有的调用 $this->get('service_name') 返回同一个实例（单例）|
 | Prototype   |　每次调用 $this->get('service_name') 返回一个新的实例 |
-| Request     |  每次调用$this->get('service_name')　返回在请求的服务相同的实例（区别在twi可能调用的subrequests）|
+| Request     |  每次调用$this->get('service_name')　返回在请求的服务相同的实例（区别在twig可能调用的subrequests）|
 
 
 服务标签Tagging services：
